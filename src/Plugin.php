@@ -81,10 +81,15 @@ class Plugin {
 			// track opens endpoint
 			$open_endpoint = rest_url( 'civicrm/v3/open' );
 
-			// replace extern url with endpoint
+			// replace html extern url with endpoint
 			$params['html'] = preg_replace( '/http.*civicrm\/extern\/url\.php/i', $url_endpoint, $params['html'] );
-			// replace extern open with endpoint
+			// replace html extern open with endpoint
 			$params['html'] = preg_replace( '/http.*civicrm\/extern\/open\.php/i', $open_endpoint, $params['html'] );
+
+			// replace text extern url with endpoint
+			$params['text'] = preg_replace( '/http.*civicrm\/extern\/url\.php/i', $url_endpoint, $params['text'] );
+			// replace text extern open with endpoint
+			$params['text'] = preg_replace( '/http.*civicrm\/extern\/open\.php/i', $open_endpoint, $params['text'] );
 
 		}
 
