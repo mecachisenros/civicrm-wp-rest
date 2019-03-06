@@ -46,6 +46,10 @@ class Plugin {
 		$url_controller = new Controller\Url;
 		$url_controller->register_routes();
 
+		// open controller
+		$open_controller = new Controller\Open;
+		$open_controller->register_routes();
+
 		/**
 		 * Opportunity to add more rest routes.
 		 *
