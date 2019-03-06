@@ -1,6 +1,6 @@
 <?php
 /**
- * WP REST CiviCRM controller class.
+ * Base controller class.
  *
  * @since 0.1
  */

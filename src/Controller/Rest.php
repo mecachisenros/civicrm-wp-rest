@@ -119,7 +119,7 @@ class Rest extends Base {
 
 		$args = $request->get_params();
 
-		// destructure antity and action
+		// destructure entity and action
 		[ 'entity' => $entity, 'action' => $action ] = $args;
 
 		// unset unnecessary args
@@ -134,6 +134,9 @@ class Rest extends Base {
 			$params = is_string( $args['json'] ) ? json_decode( $args['json'], true ) : [];
 
 		}
+
+		// ensure check permissions is enabled
+		$params['check_permissions'] = true;
 
 		return [ $entity, $action, $params ];
 
@@ -306,10 +309,63 @@ class Rest extends Base {
 
 		if ( ! $api_key ) return false;
 
-		// validate if we have a valid contact
-		if ( \CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key' ) ) return true;
+		$contact_id = \CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key' );
+
+		// validate contact and login
+		if ( $contact_id ) {
+
+			$wp_user = $this->get_wp_user( $contact_id );
+
+			$this->do_user_login( $wp_user );
+
+			return true;
+
+		}
 
 		return false;
+
+	}
+
+	/**
+	 * Get WordPress user data.
+	 *
+	 * @since 0.1
+	 * @param int $contact_id The contact id
+	 * @return bool|WP_User $user The WordPress user data
+	 */
+	protected function get_wp_user( int $contact_id ) {
+
+		try {
+
+			$uf_match = civicrm_api3( 'UFMatch', 'getsingle', [ 'contact_id' => $contact_id ] );
+
+		} catch ( \CiviCRM_API3_Exception $e ) {
+
+			return new \WP_Error( 'civicrm_rest_api_error', $e->getMessage(), [ 'status' => $this->authorization_status_code() ] );
+
+		}
+
+		$wp_user = get_userdata( $uf_match['uf_id'] );
+
+		return $wp_user;
+
+	}
+
+	/**
+	 * Logs in the WordPress user, needed to respect CiviCRM ACL and permissions.
+	 *
+	 * @since 0.1
+	 * @param  WP_User $user
+	 */
+	public function do_user_login( \WP_User $user ) {
+
+		if ( is_user_logged_in() ) return;
+
+		wp_set_current_user( $user->ID, $user->user_login );
+
+        wp_set_auth_cookie( $user->ID );
+
+        do_action( 'wp_login', $user->user_login );
 
 	}
 
