@@ -29,7 +29,26 @@ class Plugin {
 
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
 
+		add_filter( 'rest_pre_dispatch', [ $this, 'bootstrap_civi' ], 10, 3 );
+
 		add_filter( 'civicrm_alterMailParams', [ $this, 'replace_tracking_urls' ], 10, 2 );
+
+	}
+
+	/**
+	 * Bootstrap CiviCRM when hitting a the 'civicrm' namespace.
+	 *
+	 * @since 0.1
+	 * @param mixed $result
+	 * @param WP_REST_Server $server REST server instance
+	 * @param WP_REST_Request $request The request
+	 * @return mixed $result
+	 */
+	public function bootstrap_civi( $result, $server, $request ) {
+
+		if ( false !== strpos( $request->get_route(), 'civicrm' ) ) civi_wp()->initialize();
+
+		return $result;
 
 	}
 
