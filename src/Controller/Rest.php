@@ -24,7 +24,7 @@ class Rest extends Base {
 	 */
 	public function register_routes() {
 
-		register_rest_route( $this->namespace, '/' . $this->rest_base, [
+		register_rest_route( $this->get_namespace(), $this->get_rest_base(), [
 			[
 				'methods' => \WP_REST_Server::ALLMETHODS,
 				'callback' => [ $this, 'get_items' ],
@@ -195,7 +195,7 @@ class Rest extends Base {
 	 */
 	public function get_item_args() {
 
-		$args = [
+		return [
 			'key' => [
 				'type' => 'string',
 				'required' => true,
@@ -243,16 +243,6 @@ class Rest extends Base {
 			]
 		];
 
-		// don't require key and api_key if calling from home
-		// if ( $this->is_call_from_home() ) 
-		// 	return array_filter( $args, function( $arg, $key ) {
-
-		// 		return ! in_array( $key, [ 'key', 'api_key' ] );
-
-		// 	}, ARRAY_FILTER_USE_BOTH );
-
-		return $args;
-
 	}
 
 	/**
@@ -269,18 +259,6 @@ class Rest extends Base {
 		if ( ! is_array( $param ) ) return false;
 
  		return ( json_last_error() == JSON_ERROR_NONE );
-
-	}
-
-	/**
-	 * Checks if the current request is originated from the same site.
-	 *
-	 * @since 0.1
-	 * @return bool
-	 */
-	public function is_call_from_home() {
-
-		return (bool) wp_validate_redirect( wp_get_referer(), false );
 
 	}
 
@@ -357,31 +335,15 @@ class Rest extends Base {
 	 * @since 0.1
 	 * @param  WP_User $user
 	 */
-	public function do_user_login( \WP_User $user ) {
+	protected function do_user_login( \WP_User $user ) {
 
 		if ( is_user_logged_in() ) return;
 
 		wp_set_current_user( $user->ID, $user->user_login );
 
-        wp_set_auth_cookie( $user->ID );
+		wp_set_auth_cookie( $user->ID );
 
-        do_action( 'wp_login', $user->user_login );
-
-	}
-
-	/**
-	 * Authorization status code.
-	 *
-	 * @since 0.1
-	 * @return int $status
-	 */
-	public function authorization_status_code() {
-
-		$status = 401;
-
-		if ( is_user_logged_in() ) $status = 403;
-
-		return $status;
+		do_action( 'wp_login', $user->user_login );
 
 	}
 

@@ -24,7 +24,7 @@ class Url extends Base {
 	 */
 	public function register_routes() {
 
-		register_rest_route( $this->namespace, '/' . $this->rest_base, [
+		register_rest_route( $this->get_namespace(), $this->get_rest_base(), [
 			[
 				'methods' => \WP_REST_Server::READABLE,
 				'callback' => [ $this, 'get_item' ],
