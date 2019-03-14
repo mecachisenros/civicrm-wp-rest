@@ -315,7 +315,19 @@ class Rest extends Base {
 
 		try {
 
-			$uf_match = civicrm_api3( 'UFMatch', 'getsingle', [ 'contact_id' => $contact_id ] );
+			// Get CiviCRM domain group ID from constant, if set.
+			$domain_id = defined( 'CIVICRM_DOMAIN_ID' ) ? CIVICRM_DOMAIN_ID : 0;
+
+			// If this fails, get it from config.
+			if ( $domain_id === 0 ) {
+				$domain_id = CRM_Core_Config::domainID();
+			}
+
+			// Call API.
+			$uf_match = civicrm_api3( 'UFMatch', 'getsingle', [
+				'contact_id' => $contact_id,
+				'domain_id' => $domain_id,
+			] );
 
 		} catch ( \CiviCRM_API3_Exception $e ) {
 
