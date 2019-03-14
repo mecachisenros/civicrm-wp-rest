@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: CiviCRM WP REST API
- * Description: Adds a CiviCRM API v3 REST endpoint.
+ * Description: WordPress REST endpoints for CiviCRM's 'extern' endpoints.
  * Version: 0.1
  * Author: Andrei Mondoc
  * Author URI: https://github.com/mecachisenros
@@ -38,7 +38,7 @@ add_action( 'init', function() {
 	
 	// autoloader
 	require_once( CIVICRM_WP_REST_SRC . 'Autoloader.php' );
-	new CiviCRM_WP_REST\Autoloader( $source_path = CIVICRM_WP_REST_SRC );
+	CiviCRM_WP_REST\Autoloader::add_source( $source_path = CIVICRM_WP_REST_SRC );
 
 	// init
 	new CiviCRM_WP_REST\Plugin;
