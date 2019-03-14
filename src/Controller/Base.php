@@ -7,14 +7,48 @@
 
 namespace CiviCRM_WP_REST\Controller;
 
-abstract class Base extends \WP_REST_Controller {
+use CiviCRM_WP_REST\Endpoint\Endpoint_Interface;
+
+abstract class Base extends \WP_REST_Controller implements Endpoint_Interface {
 
 	/**
-	 * Route namespace.
+	 * Gets the endpoint namespace.
 	 *
 	 * @since 0.1
-	 * @var string
+	 * @return string $namespace
 	 */
-	protected $namespace = 'civicrm/v3';
+	public function get_namespace() {
+
+		return self::NAMESPACE;
+
+	}
+
+	/**
+	 * Gets the rest base route.
+	 *
+	 * @since 0.1
+	 * @return string $rest_base
+	 */
+	public function get_rest_base() {
+
+		return '/' . $this->rest_base;
+
+	}
+
+	/**
+	 * Authorization status code.
+	 *
+	 * @since 0.1
+	 * @return int $status
+	 */
+	protected function authorization_status_code() {
+
+		$status = 401;
+
+		if ( is_user_logged_in() ) $status = 403;
+
+		return $status;
+
+	}
 
 }
