@@ -23,10 +23,10 @@ define( 'CIVICRM_WP_REST_SRC', trailingslashit( CIVICRM_WP_REST_PATH . 'src' ) )
 define( 'CIVICRM_WP_REST_URL', plugin_dir_url( __FILE__ ) );
 
 /**
- * Setting this to 'true' will replace all mailing URLs calls to 'extern/url.php' 
+ * Setting this to 'true' will replace all mailing URLs calls to 'extern/url.php'
  * and 'extern/open.php' with their REST counterpart 'civicrm/v3/url' and 'civicrm/v3/open'.
  *
- * Use for test purposes, may affect mailing 
+ * Use for test purposes, may affect mailing
  * performance, see Plugin->replace_tracking_urls() method.
  */
 define( 'CIVICRM_WP_REST_REPLACE_MAILING_TRACKING', false );
@@ -35,7 +35,7 @@ define( 'CIVICRM_WP_REST_REPLACE_MAILING_TRACKING', false );
 add_action( 'init', function() {
 
 	if ( ! function_exists( 'civi_wp' ) ) return;
-	
+
 	// autoloader
 	require_once( CIVICRM_WP_REST_SRC . 'Autoloader.php' );
 	CiviCRM_WP_REST\Autoloader::add_source( $source_path = CIVICRM_WP_REST_SRC );
