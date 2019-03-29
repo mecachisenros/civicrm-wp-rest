@@ -1,24 +1,31 @@
 CiviCRM WP REST API Wrapper
 ===========================
 
-This is an experimental WordPress plugin that aims to expose CiviCRM's [extern](https://github.com/civicrm/civicrm-core/tree/master/extern) scripts as WordPress REST endpoints.
+This is a WordPress plugin that aims to expose CiviCRM's [extern](https://github.com/civicrm/civicrm-core/tree/master/extern) scripts as WordPress REST endpoints.
+
+This plugin requires:
+* PHP 7.1+
+* WordPress 4.7+
+* CiviCRM to be installed and activated.
 
 The are currently three endpoints:
 
 1. `civicrm/v3/rest` - a wrapper around `civicrm_api3()`
 
 	**Parameters**:
-	- `key` - the site key, required
-	- `api_key` - required, the contact api key
-	- `entity` - required, the API entity
-	- `action` - required, the API action
-	- `json` - optional, json formatted string with the API parameters/argumets
-	
+	- `key` - **required**, the site key
+	- `api_key` - **required**, the contact api key
+	- `entity` - **required**, the API entity
+	- `action` - **required**, the API action
+	- `json` - **optional**, json formatted string with the API parameters/argumets, or `1` as in `json=1`
+
+	By default all calls to `civicrm/v3/rest` return XML formatted results, to get `json` formatted result pass `json=1` or a json formatted string with the API parameters, like in the example 2 below.
+
 	**Examples**:
 
-	`https://example.com/wp-json/civicrm/v3/rest?entity=Contact&action=get&key=<site_key>&api_key=<api_key>&group=Administrators`
+	1. `https://example.com/wp-json/civicrm/v3/rest?entity=Contact&action=get&key=<site_key>&api_key=<api_key>&group=Administrators`
 
-	`https://example.com/wp-json/civicrm/v3/rest?entity=Contact&action=get&key=<site_key>&api_key=<api_key>&json={"group": "Administrators"}`
+	2. `https://example.com/wp-json/civicrm/v3/rest?entity=Contact&action=get&key=<site_key>&api_key=<api_key>&json={"group": "Administrators"}`
 
 2. `civicrm/v3/url` - a substition for `civicrm/extern/url.php` mailing tracking
 
@@ -27,4 +34,4 @@ The are currently three endpoints:
 ### Settings
 Set the `CIVICRM_WP_REST_REPLACE_MAILING_TRACKING` constant to `true` to replace mailing url and open tracking calls with their counterpart REST endpoints, `civicrm/v3/url` and `civicrm/v3/open`.
 
-_Note: use this setting with caution, it may affect performance on large mailing, see `Plugin->replace_tracking_urls()` method._
+_Note: use this setting with caution, it may affect performance on large mailings, see `CiviCRM_WP_REST\Civi\Mailing_Hooks` class._
