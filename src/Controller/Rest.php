@@ -94,17 +94,50 @@ class Rest extends Base {
 		 */
 		$data = apply_filters( 'civi_wp_rest/controller/rest/api_result', $items, $params, $request );
 
-		$data['values'] = array_reduce( $items['values'], function( $items, $item ) use ( $request ) {
+		// only collections of items, ie any action but 'getsingle'
+		if ( isset( $data['values'] ) ) {
 
-			$response = $this->prepare_item_for_response( $item, $request );
+			$data['values'] = array_reduce( $items['values'] ?? $items, function( $items, $item ) use ( $request ) {
 
-			$items[] = $this->prepare_response_for_collection( $response );
+				$response = $this->prepare_item_for_response( $item, $request );
 
-			return $items;
+				$items[] = $this->prepare_response_for_collection( $response );
 
-		}, [] );
+				return $items;
 
-		return rest_ensure_response( $data );
+			}, [] );
+
+		}
+
+		$response = rest_ensure_response( $data );
+
+		// check wheather we need to serve xml or json
+		if ( ! in_array( 'json', array_keys( $request->get_params() ) ) ) {
+
+			/**
+			 * Adds our response holding Civi data before dispatching.
+			 *
+			 * @since 0.1
+			 * @param WP_HTTP_Response $result Result to send to client
+			 * @param WP_REST_Server $server The REST server
+			 * @param WP_REST_Request $request The request
+			 * @return WP_HTTP_Response $result Result to send to client
+			 */
+			add_filter( 'rest_post_dispatch', function( $result, $server, $request ) use ( $response ) {
+
+				return $response;
+
+			}, 10, 3 );
+
+			// serve xml
+			add_filter( 'rest_pre_serve_request', [ $this, 'serve_xml_response' ], 10, 4 );
+
+		} else {
+
+			// return json
+			return $response;
+
+		}
 
 	}
 
@@ -152,6 +185,133 @@ class Rest extends Base {
 	public function prepare_item_for_response( $item, $request ) {
 
 		return rest_ensure_response( $item );
+
+	}
+
+	/**
+	 * Serves XML response.
+	 *
+	 * @since 0.1
+	 * @param bool $served Whether the request has already been served
+	 * @param WP_REST_Response $result
+	 * @param WP_REST_Request $request
+	 * @param WP_REST_Server $server
+	 */
+	public function serve_xml_response( $served, $result, $request, $server ) {
+
+		// get xml from response
+		$xml = $this->get_xml_formatted_data( $result->get_data() );
+
+		// set content type header
+		$server->send_header( 'Content-Type', 'text/xml' );
+
+		echo $xml;
+
+		return true;
+
+	}
+
+	/**
+	 * Formats CiviCRM API result to XML.
+	 *
+	 * @since 0.1
+	 * @param array $data The CiviCRM api result
+	 * @return string $xml The formatted xml
+	 */
+	protected function get_xml_formatted_data( array $data ) {
+
+		// xml document
+		$xml = new \DOMDocument();
+
+		// result set element <ResultSet>
+		$result_set = $xml->createElement( 'ResultSet' );
+
+		// xmlns:xsi attribute
+		$result_set->setAttribute( 'xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance' );
+
+		// count attribute
+		if ( isset( $data['count'] ) ) $result_set->setAttribute( 'count', $data['count'] );
+
+		// build result from result => values
+		if ( isset( $data['values'] ) ) {
+
+			array_map( function( $item ) use ( $result_set, $xml ) {
+
+				// result element <Result>
+				$result = $xml->createElement( 'Result' );
+
+				// format item
+				$result = $this->get_xml_formatted_item( $item, $result, $xml );
+
+				// append result to result set
+				$result_set->appendChild( $result );
+
+			}, $data['values'] );
+
+		} else {
+
+			// result element <Result>
+			$result = $xml->createElement( 'Result' );
+
+			// format item
+			$result = $this->get_xml_formatted_item( $data, $result, $xml );
+
+			// append result to result set
+			$result_set->appendChild( $result );
+
+		}
+
+		// append result set
+		$xml->appendChild( $result_set );
+
+		return $xml->saveXML();
+
+	}
+
+	/**
+	 * Formats a single api result to xml.
+	 *
+	 * @since 0.1
+	 * @param array $item The single api result
+	 * @param DOMElement $parent The parent element to append to
+	 * @param DOMDocument $doc The document
+	 * @return DOMElement $parent The parent element
+	 */
+	public function get_xml_formatted_item( array $item, \DOMElement $parent, \DOMDocument $doc ) {
+
+		// build field => values
+		array_map( function( $field, $value ) use ( $parent, $doc ) {
+
+			// entity field element
+			$element = $doc->createElement( $field );
+
+			// handle array values
+			if ( is_array( $value ) ) {
+
+				array_map( function( $key, $val ) use ( $element, $doc ) {
+
+					// child element, append underscore '_' otherwise createElement
+					// will throw an Invalid character exception as elements cannot start with a number
+					$child = $doc->createElement( '_' . $key, $val );
+
+					// append child
+					$element->appendChild( $child );
+
+				}, array_keys( $value ), $value );
+
+			} else {
+
+				// assign value
+				$element->nodeValue = $value;
+
+			}
+
+			// append element
+			$parent->appendChild( $element );
+
+		}, array_keys( $item ), $item );
+
+		return $parent;
 
 	}
 
