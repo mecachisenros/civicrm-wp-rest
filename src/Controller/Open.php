@@ -48,6 +48,36 @@ class Open extends Base {
 		// track open
 		\CRM_Mailing_Event_BAO_Opened::open( $queue_id );
 
+		// serve tracker file
+		add_filter( 'rest_pre_serve_request', [ $this, 'serve_tracker_file' ], 10, 4 );
+
+	}
+
+	/**
+	 * Serves the tracker gif file.
+	 *
+	 * @since 0.1
+	 * @param bool $served Whether the request has been served
+	 * @param WP_REST_Response $result
+	 * @param WP_REST_Request $request
+	 * @param WP_REST_Server $server
+	 * @return bool $served Whether the request has been served
+	 */
+	public function serve_tracker_file( $served, $result, $request, $server ) {
+
+		// tracker file path
+		$file = CIVICRM_PLUGIN_DIR . 'civicrm/i/tracker.gif';
+
+		// set headers
+		$server->send_header( 'Content-type', 'image/gif' );
+		$server->send_header( 'Cache-Control', 'must-revalidate, post-check=0, pre-check=0' );
+		$server->send_header( 'Content-Description', 'File Transfer' );
+		$server->send_header( 'Content-Disposition', 'inline; filename=tracker.gif' );
+		$server->send_header( 'Content-Length', filesize( $file ) );
+
+		$buffer = readfile( $file );
+
+		return true;
 
 	}
 

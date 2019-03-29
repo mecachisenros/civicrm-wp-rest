@@ -36,6 +36,31 @@ abstract class Base extends \WP_REST_Controller implements Endpoint_Interface {
 	}
 
 	/**
+	 * Retrieves the endpoint ie. '/civicrm/v3/rest'.
+	 *
+	 * @since 0.1
+	 * @return string $rest_base
+	 */
+	public function get_endpoint() {
+
+		return '/' . $this->get_namespace() . $this->get_rest_base();
+
+	}
+
+	/**
+	 * Checks whether the requested route is equal to this endpoint.
+	 *
+	 * @since 0.1
+	 * @param WP_REST_Request $request
+	 * @return bool $is_current_endpoint True if it's equal, false otherwise
+	 */
+	public function is_current_endpoint( $request ) {
+
+		return $this->get_endpoint() == $request->get_route();
+
+	}
+
+	/**
 	 * Authorization status code.
 	 *
 	 * @since 0.1
