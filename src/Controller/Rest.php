@@ -158,7 +158,7 @@ class Rest extends Base {
 		// unset unnecessary args
 		unset( $args['entity'], $args['action'], $args['key'], $args['api_key'] );
 
-		if ( ! isset( $args['json'] ) ) {
+		if ( ! isset( $args['json'] ) || is_numeric( $args['json'] ) ) {
 
 			$params = $args;
 
@@ -393,11 +393,11 @@ class Rest extends Base {
 				}
 			],
 			'json' => [
-				'type' => ['string', 'array'],
+				'type' => ['integer', 'string', 'array'],
 				'required' => false,
 				'validate_callback' => function( $value, $request, $key ) {
 
-					return is_array( $value ) || $this->is_valid_json( $value );
+					return is_numeric( $value ) || is_array( $value ) || $this->is_valid_json( $value );
 
 				}
 			]
