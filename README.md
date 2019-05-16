@@ -8,7 +8,7 @@ This plugin requires:
 * WordPress 4.7+
 * CiviCRM to be installed and activated.
 
-The are currently three endpoints:
+Current available endpoints:
 
 1. `civicrm/v3/rest` - a wrapper around `civicrm_api3()`
 
@@ -30,6 +30,12 @@ The are currently three endpoints:
 2. `civicrm/v3/url` - a substition for `civicrm/extern/url.php` mailing tracking
 
 3. `civicrm/v3/open` - a substition for `civicrm/extern/open.php` mailing tracking
+
+4. `civicrm/v3/authorizeIPN` - a substition for `civicrm/extern/authorizeIPN.php` (for testing Authorize.net as per [docs](https://docs.civicrm.org/sysadmin/en/latest/setup/payment-processors/authorize-net/#shell-script-testing-method))
+	**_Note_**: this endpoint has **not been tested**
+
+4. `civicrm/v3/ipn` - a substition for `civicrm/extern/ipn.php` (for PayPal Standard and Pro live transactions)
+	**_Note_**: this endpoint has **not been tested**
 
 ### Settings
 Set the `CIVICRM_WP_REST_REPLACE_MAILING_TRACKING` constant to `true` to replace mailing url and open tracking calls with their counterpart REST endpoints, `civicrm/v3/url` and `civicrm/v3/open`.
