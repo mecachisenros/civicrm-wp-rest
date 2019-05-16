@@ -12,6 +12,14 @@ use CiviCRM_WP_REST\Endpoint\Endpoint_Interface;
 abstract class Base extends \WP_REST_Controller implements Endpoint_Interface {
 
 	/**
+	 * Route namespace.
+	 *
+	 * @since 0.1
+	 * @var string
+	 */
+	protected $namespace = 'civicrm/v3';
+
+	/**
 	 * Gets the endpoint namespace.
 	 *
 	 * @since 0.1
@@ -19,7 +27,7 @@ abstract class Base extends \WP_REST_Controller implements Endpoint_Interface {
 	 */
 	public function get_namespace() {
 
-		return self::NAMESPACE;
+		return $this->namespace;
 
 	}
 
