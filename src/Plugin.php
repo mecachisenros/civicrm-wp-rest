@@ -89,6 +89,10 @@ class Plugin {
 		$open_controller = new Controller\Open;
 		$open_controller->register_routes();
 
+		// paypal controller
+		$paypalIPN_controller = new Controller\PayPalIPN;
+		$paypalIPN_controller->register_routes();
+
 		/**
 		 * Opportunity to add more rest routes.
 		 *
