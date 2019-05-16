@@ -32,9 +32,11 @@ Current available endpoints:
 3. `civicrm/v3/open` - a substition for `civicrm/extern/open.php` mailing tracking
 
 4. `civicrm/v3/authorizeIPN` - a substition for `civicrm/extern/authorizeIPN.php` (for testing Authorize.net as per [docs](https://docs.civicrm.org/sysadmin/en/latest/setup/payment-processors/authorize-net/#shell-script-testing-method))
+
 	**_Note_**: this endpoint has **not been tested**
 
 4. `civicrm/v3/ipn` - a substition for `civicrm/extern/ipn.php` (for PayPal Standard and Pro live transactions)
+
 	**_Note_**: this endpoint has **not been tested**
 
 ### Settings
