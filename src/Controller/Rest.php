@@ -46,10 +46,10 @@ class Rest extends Base {
 	public function permissions_check( $request ) {
 
 		if ( ! $this->is_valid_api_key( $request ) )
-			return new \WP_Error( 'rest_forbidden', __( 'Param api_key is not valid.' ), [ 'status' => $this->authorization_status_code() ] );
+			return $this->civi_rest_error( __( 'Param api_key is not valid.' ) );
 
 		if ( ! $this->is_valid_site_key() )
-			return new \WP_Error( 'rest_forbidden', __( 'Param key is not valid.' ), [ 'status' => $this->authorization_status_code() ] );
+			return $this->civi_rest_error( __( 'Param key is not valid.' ) );
 
 		return true;
 
@@ -78,7 +78,7 @@ class Rest extends Base {
 
 		} catch ( \CiviCRM_API3_Exception $e ) {
 
-			return new \WP_Error( 'civicrm_rest_api_error', $e->getMessage(), [ 'status' => $this->authorization_status_code() ] );
+			return $this->civi_rest_error( $e->getMessage() );
 
 		}
 
@@ -491,7 +491,7 @@ class Rest extends Base {
 
 		} catch ( \CiviCRM_API3_Exception $e ) {
 
-			return new \WP_Error( 'civicrm_rest_api_error', $e->getMessage(), [ 'status' => $this->authorization_status_code() ] );
+			return $this->civi_rest_error( $e->getMessage() );
 
 		}
 

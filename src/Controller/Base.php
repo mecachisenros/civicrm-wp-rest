@@ -84,4 +84,18 @@ abstract class Base extends \WP_REST_Controller implements Endpoint_Interface {
 
 	}
 
+	/**
+	 * Wrapper for WP_Error.
+	 *
+	 * @since 0.1
+	 * @param string $message
+	 * @param mixed $data Error data
+	 * @return WP_Error $error
+	 */
+	protected function civi_rest_error( $message, $data = [] ) {
+
+		return new \WP_Error( 'civicrm_rest_api_error', $message, empty( $data ) ? [ 'status' => $this->authorization_status_code() ] : $data );
+
+	}
+
 }

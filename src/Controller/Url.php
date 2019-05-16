@@ -57,7 +57,7 @@ class Url extends Base {
 
 		/**
 		 * Filter url.
-		 * 
+		 *
 		 * @param string $url
 		 * @param array $params
 		 * @param WP_REST_Request $request
