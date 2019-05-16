@@ -29,7 +29,8 @@ define( 'CIVICRM_WP_REST_URL', plugin_dir_url( __FILE__ ) );
  * Use for test purposes, may affect mailing
  * performance, see Plugin->replace_tracking_urls() method.
  */
-define( 'CIVICRM_WP_REST_REPLACE_MAILING_TRACKING', false );
+if ( ! defined( 'CIVICRM_WP_REST_REPLACE_MAILING_TRACKING' ) )
+	define( 'CIVICRM_WP_REST_REPLACE_MAILING_TRACKING', false );
 
 // init
 add_action( 'init', function() {
