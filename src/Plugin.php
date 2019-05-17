@@ -97,6 +97,10 @@ class Plugin {
 		$paypalIPN_controller = new Controller\PayPalIPN;
 		$paypalIPN_controller->register_routes();
 
+		// civiconnect controller
+		$cxn_controller = new Controller\Cxn;
+		$cxn_controller->register_routes();
+
 		/**
 		 * Opportunity to add more rest routes.
 		 *
