@@ -35,9 +35,11 @@ Current available endpoints:
 
 	**_Note_**: this endpoint has **not been tested**
 
-4. `civicrm/v3/ipn` - a substition for `civicrm/extern/ipn.php` (for PayPal Standard and Pro live transactions)
+5. `civicrm/v3/ipn` - a substition for `civicrm/extern/ipn.php` (for PayPal Standard and Pro live transactions)
 
 	**_Note_**: this endpoint has **not been tested**
+
+6. `civicrm/v3/cxn` - a substition for `civicrm/extern/cxn.php`
 
 ### Settings
 Set the `CIVICRM_WP_REST_REPLACE_MAILING_TRACKING` constant to `true` to replace mailing url and open tracking calls with their counterpart REST endpoints, `civicrm/v3/url` and `civicrm/v3/open`.
