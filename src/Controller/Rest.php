@@ -515,7 +515,7 @@ class Rest extends Base {
 
 		wp_set_auth_cookie( $user->ID );
 
-		do_action( 'wp_login', $user->user_login );
+		do_action( 'wp_login', $user->user_login, $user );
 
 	}
 
