@@ -27,7 +27,7 @@ add_action( 'init', function() {
 
 	if ( ! function_exists( 'civi_wp' ) ) return;
 
-	if ( class_exists( 'CiviCRM_WP_REST\Plugin' ) ) return;
+	if ( class_exists( 'CiviCRM_WP_REST\Autoloader' ) ) return;
 
 	// autoloader
 	require_once( CIVICRM_WP_REST_SRC . 'Autoloader.php' );
