@@ -58,7 +58,13 @@ class Plugin {
 
 			// rest calls need a wp user, do login
 			if ( false !== strpos( $request->get_route(), 'rest' ) ) {
-				$this->do_user_login( $request );
+
+				$logged_in_wp_user = $this->do_user_login( $request );
+
+				// return error
+				if ( is_wp_error( $logged_in_wp_user ) ) {
+					return $logged_in_wp_user;
+				}
 			}
 
 		}
@@ -212,7 +218,7 @@ class Plugin {
 	 *
 	 * @since 0.1
 	 * @param \WP_REST_Request $request The request
-	 * @return void
+	 * @return \WP_User|\WP_Error|void $logged_in_wp_user The logged in WordPress user object, \Wp_Error, or nothing
 	 */
 	public function do_user_login( $request ) {
 
@@ -248,7 +254,7 @@ class Plugin {
 			return $wp_user;
 		}
 
-		$this->login_wp_user( $wp_user, $request );
+		return $this->login_wp_user( $wp_user, $request );
 
 	}
 
@@ -281,7 +287,8 @@ class Plugin {
 
 			return new \WP_Error(
 				'civicrm_rest_api_error',
-				$e->getMessage()
+				$e->getMessage(),
+				$e->getTrace()
 			);
 
 		}
@@ -297,7 +304,7 @@ class Plugin {
 	 * @since 0.1
 	 * @param \WP_User $user The WordPress user object
 	 * @param \WP_REST_Request|null $request The request object or null
-	 * @return void
+	 * @return \WP_User|void $wp_user The logged in WordPress user object or nothing
 	 */
 	public function login_wp_user( \WP_User $wp_user, $request = null ) {
 
@@ -319,6 +326,8 @@ class Plugin {
 		do_action( 'wp_login', $wp_user->user_login, $wp_user );
 
 		civi_wp()->users->sync_user( $wp_user );
+
+		return $wp_user;
 
 	}
 
