@@ -56,6 +56,11 @@ class Plugin {
 
 			civi_wp()->initialize();
 
+			// rest calls need a wp user, do login
+			if ( false !== strpos( $request->get_route(), 'rest' ) ) {
+				$this->do_user_login( $request );
+			}
+
 		}
 
 		return $result;
@@ -198,6 +203,122 @@ class Plugin {
 		date_default_timezone_set( $timezones['wp_timezone'] );
 
 		return $result;
+
+	}
+
+	/**
+	 * Performs the necessary checks and
+	 * data retrieval to login a WordPress user.
+	 *
+	 * @since 0.1
+	 * @param \WP_REST_Request $request The request
+	 * @return void
+	 */
+	public function do_user_login( $request ) {
+
+		/**
+		 * Filter and opportunity to bypass
+		 * the default user login.
+		 *
+		 * @since 0.1
+		 * @param bool $login
+		 */
+		$logged_in = apply_filters( 'civi_wp_rest/plugin/do_user_login', false, $request );
+
+		if ( $logged_in ) return;
+
+		// default login based on contact's api_key
+		if ( ! ( new Controller\Rest )->is_valid_api_key( $request ) ) {
+			return new \WP_Error(
+				'civicrm_rest_api_error',
+				__( 'Missing or invalid param "api_key".', 'civicrm' )
+			);
+		}
+
+		$contact_id = \CRM_Core_DAO::getFieldValue(
+			'CRM_Contact_DAO_Contact',
+			$request->get_param( 'api_key' ),
+			'id',
+			'api_key'
+		);
+
+		$wp_user = $this->get_wp_user( $contact_id );
+
+		if ( is_wp_error( $wp_user ) ) {
+			return $wp_user;
+		}
+
+		$this->login_wp_user( $wp_user, $request );
+
+	}
+
+	/**
+	 * Get WordPress user data.
+	 *
+	 * @since 0.1
+	 * @param int $contact_id The contact id
+	 * @return WP_User|WP_Error $user The WordPress user data or WP_Error object
+	 */
+	public function get_wp_user( int $contact_id ) {
+
+		try {
+
+			// Get CiviCRM domain group ID from constant, if set.
+			$domain_id = defined( 'CIVICRM_DOMAIN_ID' ) ? CIVICRM_DOMAIN_ID : 0;
+
+			// If this fails, get it from config.
+			if ( $domain_id === 0 ) {
+				$domain_id = \CRM_Core_Config::domainID();
+			}
+
+			// Call API.
+			$uf_match = civicrm_api3( 'UFMatch', 'getsingle', [
+				'contact_id' => $contact_id,
+				'domain_id' => $domain_id,
+			] );
+
+		} catch ( \CiviCRM_API3_Exception $e ) {
+
+			return new \WP_Error(
+				'civicrm_rest_api_error',
+				$e->getMessage()
+			);
+
+		}
+
+		return get_userdata( $uf_match['uf_id'] );
+
+	}
+
+	/**
+	 * Logs in the WordPress user, and
+	 * syncs it with it's CiviCRM contact.
+	 *
+	 * @since 0.1
+	 * @param \WP_User $user The WordPress user object
+	 * @param \WP_REST_Request|null $request The request object or null
+	 * @return void
+	 */
+	public function login_wp_user( \WP_User $wp_user, $request = null ) {
+
+		/**
+		 * Filter the user about to be logged in.
+		 *
+		 * @since 0.1
+		 * @param \WP_User $user The WordPress user object
+		 * @param \WP_REST_Request|null $request The request object or null
+		 */
+		$wp_user = apply_filters( 'civi_wp_rest/plugin/wp_user_login', $wp_user, $request );
+
+		if ( is_user_logged_in() ) return;
+
+		wp_set_current_user( $wp_user->ID, $wp_user->user_login );
+
+		wp_set_auth_cookie( $wp_user->ID );
+
+		do_action( 'wp_login', $wp_user->user_login, $wp_user );
+
+		civi_wp()->users->sync_user( $wp_user );
 
 	}
 
