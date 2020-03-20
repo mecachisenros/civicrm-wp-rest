@@ -269,18 +269,10 @@ class Plugin {
 
 		try {
 
-			// Get CiviCRM domain group ID from constant, if set.
-			$domain_id = defined( 'CIVICRM_DOMAIN_ID' ) ? CIVICRM_DOMAIN_ID : 0;
-
-			// If this fails, get it from config.
-			if ( $domain_id === 0 ) {
-				$domain_id = \CRM_Core_Config::domainID();
-			}
-
 			// Call API.
 			$uf_match = civicrm_api3( 'UFMatch', 'getsingle', [
 				'contact_id' => $contact_id,
-				'domain_id' => $domain_id,
+				'domain_id' => $this->get_civi_domain_id(),
 			] );
 
 		} catch ( \CiviCRM_API3_Exception $e ) {
@@ -292,6 +284,13 @@ class Plugin {
 			);
 
 		}
+
+		// filter uf_match
+		add_filter( 'civi_wp_rest/plugin/uf_match', function() use ( $uf_match ) {
+
+			return ! empty( $uf_match ) ? $uf_match : null;
+
+		} );
 
 		return get_userdata( $uf_match['uf_id'] );
 
@@ -317,17 +316,64 @@ class Plugin {
 		 */
 		$wp_user = apply_filters( 'civi_wp_rest/plugin/wp_user_login', $wp_user, $request );
 
-		if ( is_user_logged_in() ) return;
-
 		wp_set_current_user( $wp_user->ID, $wp_user->user_login );
 
 		wp_set_auth_cookie( $wp_user->ID );
 
 		do_action( 'wp_login', $wp_user->user_login, $wp_user );
 
-		civi_wp()->users->sync_user( $wp_user );
+		$this->set_civi_user_session( $wp_user );
 
 		return $wp_user;
+
+	}
+
+	/**
+	 * Sets the necessary user
+	 * session variables for CiviCRM.
+	 *
+	 * @since 0.1
+	 * @param \WP_User $wp_user The WordPress user
+	 * @return void
+	 */
+	public function set_civi_user_session( $wp_user ): void {
+
+		$uf_match = apply_filters( 'civi_wp_rest/plugin/uf_match', null );
+
+		if ( ! $uf_match ) {
+
+			// Call API.
+			$uf_match = civicrm_api3( 'UFMatch', 'getsingle', [
+				'uf_id' => $wp_user->ID,
+				'domain_id' => $this->get_civi_domain_id(),
+			] );
+		}
+
+		// Set necessary session variables.
+		$session = \CRM_Core_Session::singleton();
+		$session->set( 'ufID', $wp_user->ID );
+		$session->set( 'userID', $uf_match['contact_id'] );
+		$session->set( 'ufUniqID', $uf_match['uf_name'] );
+
+	}
+
+	/**
+	 * Retrieves the CiviCRM domain_id.
+	 *
+	 * @since 0.1
+	 * @return int $domain_id The domain id
+	 */
+	public function get_civi_domain_id(): int {
+
+		// Get CiviCRM domain group ID from constant, if set.
+		$domain_id = defined( 'CIVICRM_DOMAIN_ID' ) ? CIVICRM_DOMAIN_ID : 0;
+
+		// If this fails, get it from config.
+		if ( $domain_id === 0 ) {
+			$domain_id = \CRM_Core_Config::domainID();
+		}
+
+		return $domain_id;
 
 	}
 
